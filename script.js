@@ -86,12 +86,19 @@ function mostrarMensaje(mensajes) {
 }
 
 function mostrarDíasJuntos(fechaInicial) {
-  const fechaDeInicio = new Date(fechaInicial);
+  const fechaDeInicio = new Date(fechaInicioStr);
   const hoy = new Date();
+
+  // Normalizar ambas fechas a medianoche (00:00:00)
+  fechaDeInicio.setHours(0, 0, 0, 0);
+  hoy.setHours(0, 0, 0, 0);
+
+  // Diferencia en días
   const tiempoDeDif = hoy - fechaDeInicio;
-  const díasDeDif = Math.floor(tiempoDeDif / (1000 * 60 * 60 * 24));
-  document.getElementById("días-juntos").textContent = `Día ${
-    díasDeDif + 1
+  const diasDeDif = Math.floor(tiempoDeDif / (1000 * 60 * 60 * 24));
+
+  document.getElementById("contador").textContent = `Día ${
+    diasDeDif + 1
   } siendo novios.`;
 }
 
