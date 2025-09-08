@@ -49,67 +49,97 @@ const temas = [
   },
 ];
 
-function aplicarTema(índice) {
-  const tema = temas[índice % temas.length];
+function aplicarTema(indice) {
+  const tema = temas[indice % temas.length];
 
   document.body.style.backgroundColor = tema.colorFondo;
-  document.getElementsByClassName("barra-superior")[0].style.color =
-    tema.colorBarra;
+
+  const barra = document.getElementsByClassName("barra-superior")[0];
+  if (barra) {
+    // Usa backgroundColor si es una barra; usa color si es texto.
+    // Cambia a lo que aplique en tu layout:
+    barra.style.backgroundColor = tema.colorBarra;
+    // barra.style.color = tema.colorBarra;
+  }
+
   const notaElem = document.getElementById("nota");
-  notaElem.style.backgroundColor = tema.colorFondoNota;
-  notaElem.style.color = tema.colorNota;
+  if (notaElem) {
+    notaElem.style.backgroundColor = tema.colorFondoNota;
+    notaElem.style.color = tema.colorNota;
+  }
 }
 
-function aplicarRotación() {
+function aplicarRotacion() {
   const nota = document.getElementById("nota");
-  // Ángulo de rotación aleatorio entre -2 y +2 grados
-  const ángulo = (Math.random() * 4 - 2).toFixed(2);
-  nota.style.transform = `rotate(${ángulo}deg)`;
+  if (!nota) return;
+  // Ángulo aleatorio entre -2 y +2
+  const angulo = Math.random() * 4 - 2; // número, no string
+  nota.style.transform = `rotate(${angulo.toFixed(2)}deg)`;
 }
 
-function obtenerDíaDelAño() {
+// Día del año robusto en UTC (evita problemas de DST)
+function obtenerDiaDelAnoUTC() {
   const ahora = new Date();
-  const comienzo = new Date(ahora.getFullYear(), 0, 0);
-  const dif =
-    ahora -
-    comienzo +
-    (comienzo.getTimezoneOffset() - ahora.getTimezoneOffset()) * 60 * 1000;
-  return Math.floor(dif / (1000 * 60 * 60 * 24));
+  const inicioUTC = Date.UTC(ahora.getUTCFullYear(), 0, 1);
+  const hoyUTC = Date.UTC(
+    ahora.getUTCFullYear(),
+    ahora.getUTCMonth(),
+    ahora.getUTCDate()
+  );
+  const dif = hoyUTC - inicioUTC;
+  return Math.floor(dif / (1000 * 60 * 60 * 24)) + 1; // +1 para que 1 Ene sea 1
 }
 
 function mostrarMensaje(mensajes) {
-  const día = obtenerDíaDelAño();
-  const índice = (día - 1) % mensajes.length;
-  aplicarTema(índice);
-  aplicarRotación();
-  document.getElementById("nota").textContent = mensajes[índice];
+  if (!Array.isArray(mensajes) || mensajes.length === 0) {
+    const nota = document.getElementById("nota");
+    if (nota) nota.textContent = "No hay mensajes para mostrar hoy.";
+    return;
+  }
+  const dia = obtenerDiaDelAnoUTC();
+  const indice = (dia - 1) % mensajes.length;
+  aplicarTema(indice);
+  aplicarRotacion();
+  const nota = document.getElementById("nota");
+  if (nota) nota.textContent = mensajes[indice];
 }
 
-function mostrarDíasJuntos(fechaInicial) {
-  const fechaDeInicio = new Date(fechaInicial);
-  const hoy = new Date();
+// Parse seguro de "YYYY-MM-DD" a fecha local sin UTC shift
+function parseFechaLocal(yyyyMmDd) {
+  const [y, m, d] = (yyyyMmDd || "").split("-").map(Number);
+  if (!y || !m || !d) return null;
+  return new Date(y, m - 1, d); // medianoche local
+}
 
-  // Normalizar ambas fechas a medianoche (00:00:00)
+function mostrarDiasJuntos(fechaInicial) {
+  const fechaDeInicio =
+    typeof fechaInicial === "string"
+      ? parseFechaLocal(fechaInicial)
+      : new Date(fechaInicial);
+  if (!(fechaDeInicio instanceof Date) || isNaN(fechaDeInicio)) return;
+
+  const hoy = new Date();
+  // Normalizar a medianoche local
   fechaDeInicio.setHours(0, 0, 0, 0);
   hoy.setHours(0, 0, 0, 0);
 
-  // Diferencia en días
   const tiempoDeDif = hoy - fechaDeInicio;
   const diasDeDif = Math.floor(tiempoDeDif / (1000 * 60 * 60 * 24));
 
-  document.getElementById("contador").textContent = `Día ${
-    diasDeDif + 1
-  } siendo novios.`;
+  const contador = document.getElementById("días-juntos");
+  if (contador) {
+    contador.textContent = `Día ${diasDeDif + 1} siendo novios.`;
+  }
 }
 
 fetch("data.json")
   .then((response) => response.json())
   .then((data) => {
-    mostrarMensaje(data.mensajes);
-    mostrarDíasJuntos(data.fechaDeInicio);
+    mostrarMensaje(data?.mensajes);
+    mostrarDiasJuntos(data?.fechaDeInicio);
   })
   .catch((error) => {
     console.error("Error al cargar data.json:", error);
-    document.getElementById("nota").textContent =
-      "No se pudo cargar el mensaje de hoy :(";
+    const nota = document.getElementById("nota");
+    if (nota) nota.textContent = "No se pudo cargar el mensaje de hoy :(";
   });
