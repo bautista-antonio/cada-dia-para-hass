@@ -56,10 +56,7 @@ function aplicarTema(indice) {
 
   const barra = document.getElementsByClassName("barra-superior")[0];
   if (barra) {
-    // Usa backgroundColor si es una barra; usa color si es texto.
-    // Cambia a lo que aplique en tu layout:
-    barra.style.backgroundColor = tema.colorBarra;
-    // barra.style.color = tema.colorBarra;
+    barra.style.color = tema.colorBarra;
   }
 
   const notaElem = document.getElementById("nota");
