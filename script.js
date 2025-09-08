@@ -86,7 +86,7 @@ function mostrarMensaje(mensajes) {
 }
 
 function mostrarDíasJuntos(fechaInicial) {
-  const fechaDeInicio = new Date(fechaInicioStr);
+  const fechaDeInicio = new Date(fechaInicial);
   const hoy = new Date();
 
   // Normalizar ambas fechas a medianoche (00:00:00)
