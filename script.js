@@ -125,7 +125,7 @@ function mostrarDiasJuntos(fechaInicial) {
 
   const contador = document.getElementById("días-juntos");
   if (contador) {
-    contador.textContent = `Día ${diasDeDif + 1} siendo novios.`;
+    contador.textContent = `Día ${diasDeDif + 1} sin el amor de mi vida.`;
   }
 }
 
